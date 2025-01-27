@@ -1,0 +1,53 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Constellation</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { background: #000; overflow: hidden; }
+        .star { transition: all 0.5s; }
+    </style>
+</head>
+<body>
+    <div id="constellation"></div>
+    <div id="horoscope" style="color: white; padding: 20px;"></div>
+
+    <script>
+        async function loadData() {
+            const response = await fetch('http://localhost:5000/analyze/torvalds/linux');
+            const data = await response.json();
+            
+            // Draw constellation
+            const svg = d3.select("#constellation")
+                .append("svg")
+                .attr("width", 800)
+                .attr("height", 600);
+
+            svg.selectAll("circle")
+                .data(data.stars)
+                .enter()
+                .append("circle")
+                .attr("class", "star")
+                .attr("cx", d => d.x * 80)
+                .attr("cy", d => d.y * 60)
+                .attr("r", d => d.size)
+                .style("fill", d => d.color)
+                .on("mouseover", function() {
+                    d3.select(this).attr("r", d => d.size * 2);
+                })
+                .on("mouseout", function() {
+                    d3.select(this).attr("r", d => d.size);
+                });
+
+            // Draw text
+            document.getElementById("horoscope").innerHTML = `
+                <h2>${data.zodiac} Coder's Horoscope:</h2>
+                <p>${data.horoscope}</p>
+            `;
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>
